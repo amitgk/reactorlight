@@ -17,8 +17,14 @@ public class Reactor<T extends Pair<Class<?>,Object>> {
     private List<IProducer> producers = new LinkedList<IProducer>();
     private BlockingQueue<T> queue = new LinkedBlockingQueue<T>(10000);
     private Function<T,T>  eventProcessor;
+    private Consumer<Throwable> exceptionHandler;
     public Reactor<T> producer(IProducer producer){
         this.producers.add(producer);
+        return this;
+    }
+
+    public Reactor<T> exceptionHandler(Consumer<Throwable> exceptionHandler){
+        this.exceptionHandler = exceptionHandler;
         return this;
     }
 
@@ -51,8 +57,12 @@ public class Reactor<T extends Pair<Class<?>,Object>> {
         Executors.newSingleThreadExecutor().submit(() -> {
            while(true){
 
-               T msg = queue.take();
-               eventProcessor.apply(msg);
+               try {
+                   T msg = queue.take();
+                   eventProcessor.apply(msg);
+               }catch(Exception e){
+                   this.exceptionHandler.accept(e);
+               }
            }
         });
 

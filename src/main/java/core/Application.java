@@ -22,7 +22,7 @@ public class Application {
         PerfMonitor<Pair<Class<?>,Object>> perfMonitor = new PerfMonitor<>();
         Function<Pair<Class<?>,Object>,Pair<Class<?>,Object>> eventProcessor = (item) -> {
 
-            //System.out.println("Received item of type:"+item.getLeft());
+            System.out.println("Received item of type:"+item.getLeft());
             //System.out.println("Processing item "+item.getLeft().cast(item.getRight()));
             perfMonitor.accept(item);
             return item;
@@ -35,6 +35,7 @@ public class Application {
                 .producer(new Producer2(reactor.getInsertingConsumer(),es))
                 .producer(new Producer3(reactor.getInsertingConsumer(),es))
                 .eventProcessor(eventProcessor)
+                .exceptionHandler(System.out::println)
                 .start();
 
 
